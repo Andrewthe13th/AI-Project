@@ -17,7 +17,7 @@ gameEnv = SuperMarioBrosEnv()
 lifeNum = 0
 save_state = None
 
-# ===== DEFINATIONS ==============
+# ===== DEFNATIONS ==============
 
 class Node:
     def __init__(self, parent = None, x_pos = None, dead = False, action = None):
@@ -50,19 +50,25 @@ state = env.reset()
 # ====== CODE =========================
 
 #use same seed to see same outcomes
-prng.seed(1337)
-random.seed(1337)
+SEED = 1337
+prng.seed(SEED)
+random.seed(SEED)
 
 # FIRST STEP OCCURED REGARDLESS -----ROOT------
-root = Node()
-randomAction = env.action_space.sample()
-state, reward, done, info = env.step(randomAction)
-print(info)
-#print(randomAction)
-#save the inital life number
-lifeNum = info["life"]
-currentChild = root.returnChild(randomAction, info["x_pos"], bMarioDead(info["life"]))
-env.render()
+# root = Node()
+# #randomAction = env.action_space.sample()
+# state, reward, done, info = env.step(0)
+# print(info)
+# #print(randomAction)
+# #save the inital life number
+# lifeNum = info["life"]
+# currentChild = root.returnChild(0, info["x_pos"], bMarioDead(info["life"]))
+# env.render()
+
+lifeNum = 3
+currentChild = Node(None,None, False,0)
+state, reward, done, info = env.step(0)
+env.reset()
 
 
 # RUN until completing the level
@@ -75,14 +81,17 @@ while(info['flag_get'] == False):
         #create new child node
         currentChild = currentChild.returnChild(randomAction, info["x_pos"], bMarioDead(info["life"]))
         # render the action/frame that occured
-        print(gameEnv._player_state)
         env.render()
 
     # ---------Save TravelTree -------------------------
     # should revert time and choose a different action    
 
+    print(currentChild.dead)
+    # used to reset mario to original self after all lives lost
+    if(info["life"] == 256): #256 == 0 lives in super mario
+        print("mario lost all lives")
 
-    print(gameEnv._player_state)
+
     #Save all actions done for mario to revert to last state
     print("===============Current Path of Random Actions =================")
     previousActions = []
@@ -92,7 +101,6 @@ while(info['flag_get'] == False):
         childIter = childIter.parent
 
     previousActions.reverse()
-    print(previousActions)
     #removed failed state
     previousActions.pop()
 
@@ -103,23 +111,22 @@ while(info['flag_get'] == False):
         currentChild = currentChild.parent
         previousActions.pop()
 
+    print(previousActions)
+
     #reset the env
     lifeNum = info["life"]
     
     env.reset()
 
-        # setup up env back to before mario DIED
+    # setup up env back to before mario DIED
     for x in previousActions:
         #just used to skip the None Action type of root node
-        if(x != None):
+        #if(x != None):
             #redo all actions from before except the last
-            state, reward, done, info = env.step(x)
-            print(info)
-            print(gameEnv._is_dead)
-            env.render()
-    
-    while(True):
-        lamda = 1
+        env.step(x)
+        env.render()
+        # else:
+        #     env.render()
 
     #pick another path from child not selected
     randomAction = random.choice(currentChild.unChosenChildren)
@@ -127,11 +134,3 @@ while(info['flag_get'] == False):
     currentChild = currentChild.returnChild(randomAction, info["x_pos"], bMarioDead(info["life"]))
     env.render()
 
-
-
-
-while(True):
-    lamda = 1
-    print("MARIO SHOULD HAVE FINISHED!!!")
-    #do nothing
-#env.close()
