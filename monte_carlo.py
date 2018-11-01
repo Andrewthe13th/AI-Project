@@ -17,7 +17,7 @@ gameEnv = SuperMarioBrosEnv()
 lifeNum = 0
 save_state = None
 
-# ===== DEFNATIONS ==============
+# ===== NODE TREE AND FUNCTIONS ==============
 
 class Node:
     def __init__(self, parent = None, x_pos = None, dead = False, action = None):
@@ -47,7 +47,7 @@ def bMarioDead(currentLifeCount):
 
 state = env.reset()
 
-# ====== CODE =========================
+# =========== MAIN CODE =========================
 
 #use same seed to see same outcomes
 SEED = 1337
@@ -70,11 +70,13 @@ currentChild = Node(None,None, False,0)
 state, reward, done, info = env.step(0)
 env.reset()
 
-
+#----------------------------SELECTION---------------------
 # RUN until completing the level
 while(info['flag_get'] == False):
+    # --------------------SIMULATION-------------------
     #RUN until mario dies
     while(currentChild.dead == False):
+        #---------------------------SELECTION--------------------
         #make a random move
         randomAction = env.action_space.sample()
         state, reward, done, info = env.step(randomAction)
@@ -83,7 +85,7 @@ while(info['flag_get'] == False):
         # render the action/frame that occured
         env.render()
 
-    # ---------Save TravelTree -------------------------
+    # ---------BACKPROPAGATION -------------------------
     # should revert time and choose a different action    
 
     print(currentChild.dead)
@@ -100,8 +102,8 @@ while(info['flag_get'] == False):
         previousActions.append(childIter.action)
         childIter = childIter.parent
 
+    #remove the failure state child from path
     previousActions.reverse()
-    #removed failed state
     previousActions.pop()
 
     currentChild = currentChild.parent
@@ -115,7 +117,6 @@ while(info['flag_get'] == False):
 
     #reset the env
     lifeNum = info["life"]
-    
     env.reset()
 
     # setup up env back to before mario DIED
